@@ -1,38 +1,35 @@
 
-using IdentityAuthLesson.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using Sign_Identity.Domain.Entities.Auth;
+using Sign_Identity.Infrastructure;
+using Sign_Identity.Infrastructure.Persistance;
 
-namespace IdentityAuthLesson
+namespace Sign_Identity.API
 {
     public class Program
     {
         public static void Main(string[] args)
         {
-            var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-
             var builder = WebApplication.CreateBuilder(args);
-
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy(name: MyAllowSpecificOrigins,
-                    policy =>
-                    {
-                        policy.AllowAnyHeader()
-                              .AllowAnyOrigin()
-                              .AllowAnyMethod();
-                    });
-            });
 
             // Add services to the container.
 
-            builder.Services.AddDbContext<ApplicationIdentityDbContext>(options => {
-                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-            });
+            builder.Services.AddDbContextOptions(builder.Configuration);
 
-            builder.Services.AddIdentity<AppUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationIdentityDbContext>()
+            builder.Services.AddIdentity<User, IdentityRole>()
+                .AddEntityFrameworkStores<SignIdentityDbContext>()
                 .AddDefaultTokenProviders();
+
+            builder.Services.AddCors(cors =>
+            {
+                cors.AddDefaultPolicy(policy =>
+                {
+                    policy
+                        .AllowAnyHeader()
+                            .AllowAnyOrigin()
+                                .AllowAnyMethod();
+                });
+            });
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -50,12 +47,11 @@ namespace IdentityAuthLesson
 
             app.UseHttpsRedirection();
 
-            app.UseCors(MyAllowSpecificOrigins);
+            app.UseCors();
 
             app.UseAuthentication();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
