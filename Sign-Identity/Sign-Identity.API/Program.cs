@@ -10,25 +10,19 @@ namespace Sign_Identity.API
     {
         public static void Main(string[] args)
         {
+
+            var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
-            builder.Services.AddDbContextOptions(builder.Configuration);
-
-            builder.Services.AddIdentity<User, IdentityRole>()
-                .AddEntityFrameworkStores<SignIdentityDbContext>()
-                .AddDefaultTokenProviders();
-
-            builder.Services.AddCors(cors =>
+            builder.Services.AddCors(option =>
             {
-                cors.AddDefaultPolicy(policy =>
-                {
-                    policy
-                        .AllowAnyHeader()
-                            .AllowAnyOrigin()
-                                .AllowAnyMethod();
-                });
+                option.AddPolicy(name: MyAllowSpecificOrigins,
+                    policy =>
+                    {
+                        policy.AllowAnyHeader().
+                        AllowAnyOrigin().
+                        AllowAnyMethod();
+                    });
             });
 
             builder.Services.AddControllers();
@@ -38,14 +32,15 @@ namespace Sign_Identity.API
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
             app.UseHttpsRedirection();
+
+            app.UseCors(MyAllowSpecificOrigins);
 
             app.UseCors();
 
